@@ -1,158 +1,61 @@
-import pandas as pd
+#coding:utf-8
+
+# 删除规则:
+# 把句末和句首的非中文字符删除
+# 删除所有emoji表情
+# 删除长度小于2的
+# 删除两句长度相差大于n(假设是20)
+# 删除带有@的
+# 删除带有网址的
+
+import emoji
 import numpy as np
-import os
-import re
-from datetime import datetime
+import pickle
 
-personName = input('Enter your full name: ')
-fbData = input('Do you have Facebook data to parse through (y/n)?')
-googleData = input('Do you have Google Hangouts data to parse through (y/n)?')
-linkedInData = input('Do you have LinkedIn data to parse through (y/n)?')
+dos=20 #difference of sentence's length
+tiebaName='王者荣耀'
 
-def getGoogleHangoutsData():
-	# Putting all the file names in a list
-	allFiles = []
-	# Edit these file and directory names if you have them saved somewhere else
-	for filename in os.listdir('GoogleTextForm'):
-	    if filename.endswith(".txt"): 
-	        allFiles.append('GoogleTextForm/' + filename)
 
-	responseDictionary = dict() # The key is the other person's message, and the value is my response
-	# Going through each file, and recording everyone's messages to me, and my responses
-	for currentFile in allFiles:
-		myMessage, otherPersonsMessage, currentSpeaker = "","",""
-		openedFile = open(currentFile, 'r') 
-		allLines = openedFile.readlines()
-	   	for index,lines in enumerate(allLines):
-	   		# The sender's name is separated by < and >
-	   	    leftBracket = lines.find('<')
-	   	    rightBracket = lines.find('>')
-	        
-	        # Find messages that I sent
-	   	    if (lines[leftBracket+1:rightBracket] == personName):
-	   	        if not myMessage:
-	   	            # Want to find the first message that I send (if I send multiple in a row)
-	   	            startMessageIndex = index - 1
-	   	        myMessage += lines[rightBracket+1:]
-	        
-	   	    elif myMessage:
-	   	        # Now go and see what message the other person sent by looking at previous messages
-	   	        for counter in range(startMessageIndex, 0, -1):
-	   	            currentLine = allLines[counter]
-	                # In case the message above isn't in the right format
-	   	            if (currentLine.find('<') < 0 or currentLine.find('>') < 0):
-	   	                myMessage, otherPersonsMessage, currentSpeaker = "","",""
-	   	                break
-	   	            if not currentSpeaker:
-	   	                # The first speaker not named me
-	   	                currentSpeaker = currentLine[currentLine.find('<')+1:currentLine.find('>')]
-	   	            elif (currentSpeaker != currentLine[currentLine.find('<')+1:currentLine.find('>')]):
-	   	                # A different person started speaking, so now I know that the first person's message is done
-		                otherPersonsMessage = cleanMessage(otherPersonsMessage)
-		                myMessage = cleanMessage(myMessage)
-	   	                responseDictionary[otherPersonsMessage] = myMessage
-	   	                break
-	   	            otherPersonsMessage = currentLine[currentLine.find('>')+1:] + otherPersonsMessage
-	   	        myMessage, otherPersonsMessage, currentSpeaker = "","",""
-	return responseDictionary
+def remove_emoji(text):
+    return ''.join(c for c in text if c not in emoji.UNICODE_EMOJI)
 
-def getFacebookData():
-	responseDictionary = dict()
-	fbFile = open('fbMessages.txt', 'r') 
-	allLines = fbFile.readlines()
-	myMessage, otherPersonsMessage, currentSpeaker = "","",""
-	for index,lines in enumerate(allLines):
-	    rightBracket = lines.find(']') + 2
-	    justMessage = lines[rightBracket:]
-	    colon = justMessage.find(':')
-	    # Find messages that I sent
-	    if (justMessage[:colon] == personName):
-	        if not myMessage:
-	            # Want to find the first message that I send (if I send multiple in a row)
-	            startMessageIndex = index - 1
-	        myMessage += justMessage[colon+2:]
-	        
-	    elif myMessage:
-	        # Now go and see what message the other person sent by looking at previous messages
-	        for counter in range(startMessageIndex, 0, -1):
-	            currentLine = allLines[counter]
-	            rightBracket = currentLine.find(']') + 2
-	            justMessage = currentLine[rightBracket:]
-	            colon = justMessage.find(':')
-	            if not currentSpeaker:
-	                # The first speaker not named me
-	                currentSpeaker = justMessage[:colon]
-	            elif (currentSpeaker != justMessage[:colon] and otherPersonsMessage):
-	                # A different person started speaking, so now I know that the first person's message is done
-	                otherPersonsMessage = cleanMessage(otherPersonsMessage)
-	                myMessage = cleanMessage(myMessage)
-	                responseDictionary[otherPersonsMessage] = myMessage
-	                break
-	            otherPersonsMessage = justMessage[colon+2:] + otherPersonsMessage
-	        myMessage, otherPersonsMessage, currentSpeaker = "","",""    
-	return responseDictionary
-
-def getLinkedInData():
-	df = pd.read_csv('Inbox.csv')
-	dateTimeConverter = lambda x: datetime.strptime(x,'%B %d, %Y, %I:%M %p')
-	responseDictionary = dict()
-	peopleContacted = df['From'].unique().tolist()
-	for person in peopleContacted:
-	    receivedMessages = df[df['From'] == person]
-	    sentMessages = df[df['To'] == person]
-	    if (len(sentMessages) == 0 or len(receivedMessages) == 0):
-	        # There was no actual conversation
-	        continue
-	    combined = pd.concat([sentMessages, receivedMessages])
-	    combined['Date'] = combined['Date'].apply(dateTimeConverter)
-	    combined = combined.sort(['Date'])
-	    otherPersonsMessage, myMessage = "",""
-	    firstMessage = True
-	    for index, row in combined.iterrows():
-	        if (row['From'] != personName):
-	            if myMessage and otherPersonsMessage:
-	                otherPersonsMessage = cleanMessage(otherPersonsMessage)
-	                myMessage = cleanMessage(myMessage)
-	                responseDictionary[otherPersonsMessage.rstrip()] = myMessage.rstrip()
-	                otherPersonsMessage, myMessage = "",""
-	            otherPersonsMessage = otherPersonsMessage + row['Content'] + " "
-	        else:
-	            if (firstMessage):
-	                firstMessage = False
-	                # Don't include if I am the person initiating the convo
-	                continue
-	            myMessage = myMessage + str(row['Content']) + " "
-	return responseDictionary
-
-def cleanMessage(message):
-	# Remove new lines within message
-	cleanedMessage = message.replace('\n',' ').lower()
-	# Deal with some weird tokens
-	cleanedMessage = cleanedMessage.replace("\xc2\xa0", "")
-	# Remove punctuation
-	cleanedMessage = re.sub('([.,!?])','', cleanedMessage)
-	# Remove multiple spaces in message
-	cleanedMessage = re.sub(' +',' ', cleanedMessage)
-	return cleanedMessage
-
-combinedDictionary = {}
-if (googleData == 'y'):
-	print 'Getting Google Hangout Data'
-	combinedDictionary.update(getGoogleHangoutsData())
-if (fbData == 'y'):
-	print 'Getting Facebook Data'
-	combinedDictionary.update(getFacebookData())
-if (linkedInData == 'y'):
-	print 'Getting LinkedIn Data'
-	combinedDictionary.update(getLinkedInData())
-print 'Total len of dictionary', len(combinedDictionary)
-
-print 'Saving conversation data dictionary'
-np.save('conversationDictionary.npy', combinedDictionary)
-
-conversationFile = open('conversationData.txt', 'w')
-for key,value in combinedDictionary.iteritems():
-	if (not key.strip() or not value.strip()):
-		# If there are empty strings
+newResult=dict()
+oldResult = np.load(tiebaName+'.npy').item()
+for k,v in oldResult.items():
+	k = remove_emoji(k)
+	while(len(k)>1):
+		if u'\u4e00' <= k[-1] <= u'\u9fff':
+			break
+		else:
+			k=k[:-1]
+	while(len(k)>1):
+		if u'\u4e00' <= k[0] <= u'\u9fff':
+			break
+		else:
+			k=k[1:]
+	if len(k)<2:
 		continue
-   	conversationFile.write(key.strip() + value.strip())
+	v = remove_emoji(v)
+	while(len(v)>1):
+		if u'\u4e00' <= v[-1] <= u'\u9fff':
+			break
+		else:
+			v=v[:-1]
+	while(len(v)>1):
+		if u'\u4e00' <= v[0] <= u'\u9fff':
+			break
+		else:
+			v=v[1:]		
+	if len(v)<2 or abs(len(k)-len(v)) >= dos or k.find('@')!=-1 or v.find('@')!=-1 or k.find('http')!=-1 or v.find('http')!=-1:
+		continue	
+	
+	newResult[k]=v
+np.save(tiebaName+'clean.npy', newResult)
+with open(tiebaName+'clean.txt','w',encoding='utf8') as converFile, open("wordList.txt", "wb") as fp:
+	strSet=set()
+	for d,x in newResult.items():
+		strSet=strSet | set(d+x)
+		converFile.write(d+"\t"+x+"\n")
+	print('对话组总数：'+str(len(newResult)))
+	print('字符总数：'+str(len(strSet)))
+	pickle.dump(list(strSet), fp)

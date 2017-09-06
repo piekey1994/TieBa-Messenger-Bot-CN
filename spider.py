@@ -9,12 +9,11 @@ import socket
 import myLog
 import numpy as np
 
-logFilePath='log.txt'
 tiebaName='王者荣耀'
 tiebaHtml='https://tieba.baidu.com/f?kw=%E7%8E%8B%E8%80%85%E8%8D%A3%E8%80%80&ie=utf-8&tab=good'
 
 socket.setdefaulttimeout(15) #http请求超时时间
-logger=myLog.getLogging(logFilePath) #log文件
+logger=myLog.getLogging(tiebaName+'log.txt') #log文件
 
 def filterFun(tagname,flist): #多值class过滤器
     def listinlist(a,b):
