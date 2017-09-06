@@ -50,7 +50,7 @@ for k,v in oldResult.items():
 		continue	
 	
 	newResult[k]=v
-np.save(tiebaName+'clean.npy', newResult)
+np.save('conversationDictionary.npy', newResult)
 with open(tiebaName+'clean.txt','w',encoding='utf8') as converFile, open("wordList.txt", "wb") as fp:
 	strSet=set()
 	for d,x in newResult.items():
