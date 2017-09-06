@@ -48,14 +48,19 @@ for k,v in oldResult.items():
 			v=v[1:]		
 	if len(v)<2 or abs(len(k)-len(v)) >= dos or k.find('@')!=-1 or v.find('@')!=-1 or k.find('http')!=-1 or v.find('http')!=-1:
 		continue	
-	
 	newResult[k]=v
-np.save('conversationDictionary.npy', newResult)
+
 with open(tiebaName+'clean.txt','w',encoding='utf8') as converFile, open("wordList.txt", "wb") as fp:
 	strSet=set()
+	spiltResult=dict()
 	for d,x in newResult.items():
 		strSet=strSet | set(d+x)
-		converFile.write(d+"\t"+x+"\n")
+		
+		d=' '.join(i for i in d)
+		x=' '.join(i for i in x)
+		spiltResult[d]=x
+		converFile.write(d+"\n"+x+"\n\n")
 	print('对话组总数：'+str(len(newResult)))
 	print('字符总数：'+str(len(strSet)))
 	pickle.dump(list(strSet), fp)
+	np.save('conversationDictionary.npy', spiltResult)

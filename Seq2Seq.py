@@ -14,7 +14,7 @@ def createTrainingMatrices(conversationFileName, wList, maxLen):
 	numExamples = len(conversationDictionary)
 	xTrain = np.zeros((numExamples, maxLen), dtype='int32')
 	yTrain = np.zeros((numExamples, maxLen), dtype='int32')
-	for index,(key,value) in enumerate(conversationDictionary.iteritems()):
+	for index,(key,value) in enumerate(conversationDictionary.items()):
 		# Will store integerized representation of strings here (initialized as padding)
 		encoderMessage = np.full((maxLen), wList.index('<pad>'), dtype='int32')
 		decoderMessage = np.full((maxLen), wList.index('<pad>'), dtype='int32')
@@ -127,7 +127,7 @@ def idsToSentence(ids, wList):
 
 # Hyperparamters
 batchSize = 24
-maxEncoderLength = 15
+maxEncoderLength = 50
 maxDecoderLength = maxEncoderLength
 lstmUnits = 112
 embeddingDim = lstmUnits
@@ -190,11 +190,11 @@ logdir = "tensorboard/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + "/
 writer = tf.summary.FileWriter(logdir, sess.graph)
 
 # Some test strings that we'll use as input at intervals during training
-encoderTestStrings = ["whats up bro",
-					"hi",
-					"hey how are you",
-					"that girl was really cute tho",
-					"that dodgers game was awesome"
+encoderTestStrings = ["露 娜 怎 么 出 装",
+					"李 白 好 强 啊",
+					"你 好",
+					"为 什 么 排 位 老 输",
+					"一 红 给 射 手 还 是 刺 客"
 					]
 
 zeroVector = np.zeros((1), dtype='int32')
@@ -222,7 +222,7 @@ for i in range(numIterations):
 		feedDict.update({decoderInputs[t]: zeroVector for t in range(maxDecoderLength)})
 		feedDict.update({feedPrevious: True})
 		ids = (sess.run(decoderPrediction, feed_dict=feedDict))
-		print idsToSentence(ids, wordList)
+		print(idsToSentence(ids, wordList)) 
 
 	if (i % 10000 == 0 and i != 0):
 		savePath = saver.save(sess, "models/pretrained_seq2seq.ckpt", global_step=i)
