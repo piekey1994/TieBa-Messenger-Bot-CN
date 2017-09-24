@@ -1,4 +1,6 @@
 *.txt
 *.npy
+*.json
 /.vscode/*
 /__pycache__/*
+/model/*
