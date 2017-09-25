@@ -13,23 +13,23 @@ from collections import OrderedDict
 import numpy as np
 import tensorflow as tf
 
-from data.data_iterator import TextIterator
+from data_iterator import TextIterator
 
-import data.util as util
-import data.data_utils as data_utils
-from data.data_utils import prepare_batch
-from data.data_utils import prepare_train_batch
+import util as util
+import data_utils as data_utils
+from data_utils import prepare_batch
+from data_utils import prepare_train_batch
 
 from seq2seq_model import Seq2SeqModel
 
 # Decoding parameters
-tf.app.flags.DEFINE_integer('beam_width', 12, 'Beam width used in beamsearch')
-tf.app.flags.DEFINE_integer('decode_batch_size', 80, 'Batch size used for decoding')
+tf.app.flags.DEFINE_integer('beam_width', 1, 'Beam width used in beamsearch')
+tf.app.flags.DEFINE_integer('decode_batch_size', 50, 'Batch size used for decoding')
 tf.app.flags.DEFINE_integer('max_decode_step', 500, 'Maximum time step limit to decode')
 tf.app.flags.DEFINE_boolean('write_n_best', False, 'Write n-best list (n=beam_width)')
-tf.app.flags.DEFINE_string('model_path', None, 'Path to a specific model checkpoint.')
-tf.app.flags.DEFINE_string('decode_input', 'data/newstest2012.bpe.de', 'Decoding input path')
-tf.app.flags.DEFINE_string('decode_output', 'data/newstest2012.bpe.de.trans', 'Decoding output path')
+tf.app.flags.DEFINE_string('model_path', 'model/translate.ckpt-5440', 'Path to a specific model checkpoint.')
+tf.app.flags.DEFINE_string('decode_input', 'test.txt', 'Decoding input path')
+tf.app.flags.DEFINE_string('decode_output', 'output.txt', 'Decoding output path')
 
 # Runtime parameters
 tf.app.flags.DEFINE_boolean('allow_soft_placement', True, 'Allow device soft placement')
@@ -39,11 +39,9 @@ FLAGS = tf.app.flags.FLAGS
 
 def load_config(FLAGS):
     
-    config = util.unicode_to_utf8(
-        json.load(open('%s.json' % FLAGS.model_path, 'rb')))
+    config = json.load(open('%s.json' % FLAGS.model_path, 'r'))
     for key, value in FLAGS.__flags.items():
         config[key] = value
-
     return config
 
 
@@ -51,7 +49,7 @@ def load_model(session, config):
     
     model = Seq2SeqModel(config, 'decode')
     if tf.train.checkpoint_exists(FLAGS.model_path):
-        print 'Reloading model parameters..'
+        print ('Reloading model parameters..')
         model.restore(session, FLAGS.model_path)
     else:
         raise ValueError(
@@ -80,7 +78,7 @@ def decode():
         # Reload existing checkpoint
         model = load_model(sess, config)
         try:
-            print 'Decoding {}..'.format(FLAGS.decode_input)
+            print ('Decoding {}..'.format(FLAGS.decode_input))
             if FLAGS.write_n_best:
                 fout = [data_utils.fopen(("%s_%d" % (FLAGS.decode_output, k)), 'w') \
                         for k in range(FLAGS.beam_width)]
@@ -100,9 +98,9 @@ def decode():
                         f.write(str(data_utils.seq2words(seq[:,k], target_inverse_dict)) + '\n')
                     if not FLAGS.write_n_best:
                         break
-                print '  {}th line decoded'.format(idx * FLAGS.decode_batch_size)
+                print ('  {}th line decoded'.format(idx * FLAGS.decode_batch_size))
                 
-            print 'Decoding terminated'
+            print ('Decoding terminated')
         except IOError:
             pass
         finally:

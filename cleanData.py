@@ -50,17 +50,17 @@ for k,v in oldResult.items():
 		continue	
 	newResult[k]=v
 
-with open(tiebaName+'clean.txt','w',encoding='utf8') as converFile, open("wordList.txt", "wb") as fp:
+with open(tiebaName+'clean.txt','w',encoding='utf8') as converFile:#, open("wordList.txt", "wb") as fp:
 	strSet=set()
 	spiltResult=dict()
 	for d,x in newResult.items():
 		strSet=strSet | set(d+x)
 		
-		d=' '.join(i for i in d)
-		x=' '.join(i for i in x)
+		#d=' '.join(i for i in d)
+		#x=' '.join(i for i in x)
 		spiltResult[d]=x
 		converFile.write(d+"\n"+x+"\n\n")
 	print('对话组总数：'+str(len(newResult)))
 	print('字符总数：'+str(len(strSet)))
-	pickle.dump(list(strSet), fp)
+	#pickle.dump(list(strSet), fp)
 	np.save('conversationDictionary.npy', spiltResult)

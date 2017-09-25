@@ -6,6 +6,8 @@ with open('newkey.txt','w',encoding='utf8') as newkey,open('newvalue.txt','w',en
     newSet=set()
     conversationDictionary = np.load('conversationDictionary.npy').item()
     for key,value in conversationDictionary.items():
+        key=' '.join(i for i in key)
+        value=' '.join(i for i in value)
         newkey.write(key+'\n')
         newvalue.write(value+'\n')
         newSet = newSet | set(key.split()) | set(value.split())

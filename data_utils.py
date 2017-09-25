@@ -18,13 +18,13 @@ unk_token = extra_tokens.index(UNK)
 def fopen(filename, mode='r'):
     if filename.endswith('.gz'):
         return gzip.open(filename, mode)
-    return open(filename, mode)
+    return open(filename, mode,encoding='utf8')
 
 
 def load_inverse_dict(dict_path):
     orig_dict = load_dict(dict_path)
     idict = {}
-    for words, idx in orig_dict.iteritems():
+    for words, idx in orig_dict.items():
         idict[idx] = words
     return idict
 
