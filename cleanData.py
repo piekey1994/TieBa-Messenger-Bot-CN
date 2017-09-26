@@ -14,7 +14,7 @@ import pickle
 
 dos=20 #difference of sentence's length
 tiebaName='王者荣耀'
-
+minlen=4
 
 def remove_emoji(text):
     return ''.join(c for c in text if c not in emoji.UNICODE_EMOJI)
@@ -33,7 +33,7 @@ for k,v in oldResult.items():
 			break
 		else:
 			k=k[1:]
-	if len(k)<2:
+	if len(k)<minlen:
 		continue
 	v = remove_emoji(v)
 	while(len(v)>1):
@@ -46,7 +46,7 @@ for k,v in oldResult.items():
 			break
 		else:
 			v=v[1:]		
-	if len(v)<2 or abs(len(k)-len(v)) >= dos or k.find('@')!=-1 or v.find('@')!=-1 or k.find('http')!=-1 or v.find('http')!=-1:
+	if len(v)<minlen or abs(len(k)-len(v)) >= dos or k.find('@')!=-1 or v.find('@')!=-1 or k.find('http')!=-1 or v.find('http')!=-1:
 		continue	
 	newResult[k]=v
 
