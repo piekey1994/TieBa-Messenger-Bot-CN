@@ -29,7 +29,13 @@ with open(tiebaName+'.txt','w',encoding='utf8') as result:
     try:
         html=tiebaHtml
         resultDict=dict()
+        #readPageNum=0
+        #maxreadNum=20
+        maxDictLen=1000000
         while (True):
+            if len(resultDict)>maxDictLen:
+                break
+            #readPageNum=readPageNum+1
             logger.warning('读取主页面:'+html)
             try:
                 bsObj = BeautifulSoup(urlopen(html),'lxml',from_encoding="utf-8")
