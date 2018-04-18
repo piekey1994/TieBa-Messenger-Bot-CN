@@ -1,3 +1,4 @@
+
 #coding:utf-8
 
 # 删除规则:
@@ -13,7 +14,7 @@ import numpy as np
 import pickle
 
 dos=20 #difference of sentence's length
-tiebaName='1000'
+tiebaName='王者荣耀'
 minlen=4
 
 def remove_emoji(text):
@@ -50,16 +51,20 @@ for k,v in oldResult.items():
 		continue	
 	newResult[k]=v
 
-with open(tiebaName+'clean.txt','w',encoding='utf8') as converFile:#, open("wordList.txt", "wb") as fp:
+with open(tiebaName+'clean.txt','w',encoding='utf8') as converFile:   #, open("wordList.txt", "wb") as fp:
 	strSet=set()
 	spiltResult=dict()
+	num = 0
 	for d,x in newResult.items():
+		if num>1000:
+			break
 		strSet=strSet | set(d+x)
 		
 		#d=' '.join(i for i in d)
 		#x=' '.join(i for i in x)
 		spiltResult[d]=x
 		converFile.write(d+"\t"+x+"\n")
+		num += 1
 	print('对话组总数：'+str(len(newResult)))
 	print('字符总数：'+str(len(strSet)))
 	#pickle.dump(list(strSet), fp)

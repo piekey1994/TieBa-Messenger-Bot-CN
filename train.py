@@ -36,9 +36,9 @@ tf.app.flags.DEFINE_string('cell_type', 'lstm', 'RNN cell for encoder and decode
 tf.app.flags.DEFINE_string('attention_type', 'bahdanau', 'Attention mechanism: (bahdanau, luong), default: bahdanau')
 tf.app.flags.DEFINE_integer('hidden_units', 1024, 'Number of hidden units in each layer')
 tf.app.flags.DEFINE_integer('depth', 4, 'Number of layers in each encoder and decoder')
-tf.app.flags.DEFINE_integer('embedding_size', 500, 'Embedding dimensions of encoder and decoder inputs')
-tf.app.flags.DEFINE_integer('num_encoder_symbols', 40910, 'Source vocabulary size')
-tf.app.flags.DEFINE_integer('num_decoder_symbols', 40910, 'Target vocabulary size')
+tf.app.flags.DEFINE_integer('embedding_size', 620, 'Embedding dimensions of encoder and decoder inputs')
+tf.app.flags.DEFINE_integer('num_encoder_symbols', 40003, 'Source vocabulary size')
+tf.app.flags.DEFINE_integer('num_decoder_symbols', 40003, 'Target vocabulary size')
 
 tf.app.flags.DEFINE_boolean('use_residual', True, 'Use residual connection between layers')
 tf.app.flags.DEFINE_boolean('attn_input_feeding', False, 'Use input feeding method in attentional decoder')
@@ -70,7 +70,7 @@ FLAGS = tf.app.flags.FLAGS
 
 def create_model(session, FLAGS):
 
-    config = OrderedDict(sorted(FLAGS.__flags.items()))
+    config = FLAGS.flag_values_dict()
     model = Seq2SeqModel(config, 'train')
 
     ckpt = tf.train.get_checkpoint_state(FLAGS.model_dir)
@@ -205,7 +205,7 @@ def train():
                     checkpoint_path = os.path.join(FLAGS.model_dir, FLAGS.model_name)
                     model.save(sess, checkpoint_path, global_step=model.global_step)
                     json.dump(model.config,
-                              open('%s-%d.json' % (checkpoint_path, model.global_step.eval()), 'wb'),
+                              open('%s-%d.json' % (checkpoint_path, model.global_step.eval()), 'w'),
                               indent=2)
 
             # Increase the epoch index of the model

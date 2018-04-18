@@ -27,7 +27,7 @@ tf.app.flags.DEFINE_integer('beam_width', 1, 'Beam width used in beamsearch')
 tf.app.flags.DEFINE_integer('decode_batch_size', 50, 'Batch size used for decoding')
 tf.app.flags.DEFINE_integer('max_decode_step', 500, 'Maximum time step limit to decode')
 tf.app.flags.DEFINE_boolean('write_n_best', False, 'Write n-best list (n=beam_width)')
-tf.app.flags.DEFINE_string('model_path', 'model/translate.ckpt-5440', 'Path to a specific model checkpoint.')
+tf.app.flags.DEFINE_string('model_path', 'model/translate.ckpt-80', 'Path to a specific model checkpoint.')
 tf.app.flags.DEFINE_string('decode_input', 'test.txt', 'Decoding input path')
 tf.app.flags.DEFINE_string('decode_output', 'output.txt', 'Decoding output path')
 
@@ -40,7 +40,7 @@ FLAGS = tf.app.flags.FLAGS
 def load_config(FLAGS):
     
     config = json.load(open('%s.json' % FLAGS.model_path, 'r'))
-    for key, value in FLAGS.__flags.items():
+    for key, value in FLAGS.flag_values_dict().items():
         config[key] = value
     return config
 
