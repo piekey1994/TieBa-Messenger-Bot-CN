@@ -4,4 +4,7 @@
 /.vscode/*
 /__pycache__/*
 /model/*
+/pretrain/*
+/weibo/stc_weibo_train_post
+/weibo/stc_weibo_train_response
 temp.py
